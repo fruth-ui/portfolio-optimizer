@@ -19,9 +19,51 @@ st.caption("Mean-variance optimization via Monte Carlo + SciPy")
 with st.sidebar:
     st.header("Settings")
 
-    default_tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"]
-    raw = st.text_input("Tickers (comma-separated)", value=", ".join(default_tickers))
-    tickers = [t.strip().upper() for t in raw.split(",") if t.strip()]
+    POPULAR_TICKERS = [
+        "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "BRK-B",
+        "JPM", "V", "UNH", "XOM", "LLY", "JNJ", "WMT", "MA", "PG", "HD",
+        "MRK", "ORCL", "ABBV", "BAC", "KO", "CVX", "PEP", "COST", "ADBE",
+        "CSCO", "TMO", "MCD", "CRM", "ACN", "ABT", "NFLX", "AMD", "INTC",
+        "QCOM", "TXN", "NEE", "PM", "RTX", "HON", "AMGN", "IBM", "GE",
+        "CAT", "GS", "BLK", "SPGI", "AXP", "INTU", "BKNG", "ISRG", "SYK",
+        "T", "VZ", "DIS", "PYPL", "UBER", "LYFT", "SNAP", "SPOT", "SQ",
+        "COIN", "PLTR", "ARM", "SMCI", "MU", "LRCX", "AMAT", "KLAC",
+    ]
+
+    # Keep any custom tickers the user added in previous runs
+    if "custom_tickers" not in st.session_state:
+        st.session_state.custom_tickers = []
+
+    all_options = POPULAR_TICKERS + [
+        t for t in st.session_state.custom_tickers if t not in POPULAR_TICKERS
+    ]
+
+    selected = st.multiselect(
+        "Select tickers",
+        options=all_options,
+        default=["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"],
+        help="Search and select from the list below",
+    )
+
+    custom_input = st.text_input(
+        "Add a custom ticker",
+        placeholder="e.g. TSM, ASML, 9988.HK",
+        help="Type any ticker not in the list above, then press Enter",
+    )
+    if custom_input:
+        custom_ticker = custom_input.strip().upper()
+        if custom_ticker and custom_ticker not in st.session_state.custom_tickers:
+            st.session_state.custom_tickers.append(custom_ticker)
+            st.rerun()
+
+    tickers = selected + [
+        t for t in st.session_state.custom_tickers if t not in selected
+    ]
+    if st.session_state.custom_tickers:
+        st.caption(f"Custom: {', '.join(st.session_state.custom_tickers)}")
+        if st.button("Clear custom tickers", use_container_width=True):
+            st.session_state.custom_tickers = []
+            st.rerun()
 
     col1, col2 = st.columns(2)
     with col1:
